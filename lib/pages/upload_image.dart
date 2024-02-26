@@ -60,25 +60,40 @@ class _UploadImageAndMoreStateState extends State<UploadImageAndMoreState> {
                 // ! ADD AN IMAGE
                 // USED IMAGE PICKER HERE
                 IconButton(
-                  onPressed: () async{
-                    final file = await ImagePicker().pickImage(source: ImageSource.camera);
-                    if(file == null) return;
+                  onPressed: () async {
+                    final file = await ImagePicker()
+                        .pickImage(source: ImageSource.camera);
+                    if (file == null) return;
 
-                    String fileName = DateTime.now().microsecondsSinceEpoch.toString();
+                    String fileName =
+                        DateTime.now().microsecondsSinceEpoch.toString();
                     Reference refRoot = FirebaseStorage.instance.ref();
                     Reference refDirImage = refRoot.child("images");
                     Reference refImageToUpload = refDirImage.child(fileName);
 
                     try {
-                      await refImageToUpload.putFile(File(file.path));
+                      String fileExtension =
+                          file.path.split('.').last.toLowerCase();
+
+                      String contentType = 'image/jpeg';
+
+                      if (fileExtension == 'png') {
+                        contentType = 'image/png';
+                      }
+
+                      await refImageToUpload.putFile(
+                        File(file.path),
+                        SettableMetadata(contentType: contentType),
+                      );
 
                       imageUrl = await refImageToUpload.getDownloadURL();
-                    }catch(e) {
+                    } catch (e) {
                       log(e.toString());
                     }
                   },
                   icon: const Icon(Icons.camera),
                 ),
+
                 //! ADD A NEW ITEM
                 ElevatedButton(
                   onPressed: () async {
